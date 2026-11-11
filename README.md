@@ -26,13 +26,18 @@ works offline.
 
 | Purpose | Model | Download | Notes |
 |---|---|---|---|
-| Speech-to-text | Whisper `base` (default) | 142 MB | Fast; good for clear voice messages |
-| Speech-to-text | Whisper `small` | 466 MB | Better German, noticeably slower |
-| Summary | Qwen3 0.6B INT4 (LiteRT-LM) | 345 MB | Apache-2.0, no Hugging Face token needed |
+| Speech-to-text | Whisper `small` (default) | 466 MB | Good German; recommended |
+| Speech-to-text | Whisper `base` | 142 MB | Faster, but misses words in German |
+| Summary | Qwen2.5 1.5B Instruct (default) | 1.6 GB | Good German summaries |
+| Summary | Qwen3 0.6B INT4 | 345 MB | Fast, but weak and prone to repeating itself |
 
-Recommendation for German voice messages: start with `base`; switch to `small`
-in the settings (top right) if names or dialect come out wrong. `medium` and
-`large` are too slow and too big for phones.
+All models are Apache-2.0 / MIT and download without a Hugging Face token.
+Both choices are in the settings (top right). `medium` and `large` Whisper
+models are too slow and too big for phones.
+
+Messages under 25 words are not sent to the LLM - the summary is the message
+itself, because a small model only pads a single sentence with invented
+points. Repeated bullets are dropped and at most five are kept.
 
 ## Requirements
 

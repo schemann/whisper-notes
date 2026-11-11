@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers.dart';
 import '../models/note.dart';
+import '../services/summary_service.dart';
 import '../services/transcription_service.dart';
 import 'note_page.dart';
 import 'record_panel.dart';
@@ -126,6 +127,7 @@ class _HomePageState extends ConsumerState<HomePage>
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (_) => const _SettingsSheet(),
     );
   }
@@ -205,7 +207,7 @@ class _SettingsSheet extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -234,10 +236,22 @@ class _SettingsSheet extends ConsumerWidget {
                 ],
               ),
             ),
+            const Text('Summary model'),
+            RadioGroup<SummaryModel>(
+              groupValue: settings.summaryModel,
+              onChanged: (m) =>
+                  notifier.update(settings.copyWith(summaryModel: m)),
+              child: Column(
+                children: [
+                  for (final m in SummaryModel.values)
+                    RadioListTile<SummaryModel>(value: m, title: Text(m.label)),
+                ],
+              ),
+            ),
             SwitchListTile(
               title: const Text('Summarise automatically'),
               subtitle: const Text(
-                'On-device LLM, ~345 MB download on first use',
+                'Messages under 25 words are kept as they are',
               ),
               value: settings.summarize,
               onChanged: (v) =>

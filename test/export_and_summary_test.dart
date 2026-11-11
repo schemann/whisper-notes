@@ -15,8 +15,14 @@ void main() {
   const formatter = ExportFormatter();
 
   test('file name carries date, time and extension', () {
-    expect(formatter.fileName(note, ExportFormat.md), 'transcript_2026-11-11_0905.md');
-    expect(formatter.fileName(note, ExportFormat.txt), 'transcript_2026-11-11_0905.txt');
+    expect(
+      formatter.fileName(note, ExportFormat.md),
+      'transcript_2026-11-11_0905.md',
+    );
+    expect(
+      formatter.fileName(note, ExportFormat.txt),
+      'transcript_2026-11-11_0905.txt',
+    );
   });
 
   test('markdown export has summary and transcript sections', () {
@@ -34,12 +40,35 @@ void main() {
 
   group('cleanSummary', () {
     test('drops a think block and normalises bullets', () {
-      const raw = '<think>planning…</think>\n* Punkt eins\n2. Punkt zwei\n\n• Punkt drei';
+      const raw =
+          '<think>planning…</think>\n* Punkt eins\n2. Punkt zwei\n\n• Punkt drei';
       expect(cleanSummary(raw), '- Punkt eins\n- Punkt zwei\n- Punkt drei');
     });
 
     test('drops an unterminated think block', () {
       expect(cleanSummary('- Fakt\n<think>abgebrochen'), '- Fakt');
+    });
+
+    test('drops repeated bullets and keeps at most five', () {
+      const raw = '- A\n- a\n- B\n- C\n- B\n- D\n- E\n- F';
+      expect(cleanSummary(raw), '- A\n- B\n- C\n- D\n- E');
+    });
+  });
+
+  group('directSummary', () {
+    test('short message becomes its own single bullet', () {
+      expect(
+        directSummary('  Ja, ich komme   gleich. '),
+        '- Ja, ich komme gleich.',
+      );
+      expect(directSummary('   '), '');
+    });
+
+    test('long message goes to the LLM', () {
+      expect(
+        directSummary(List.filled(minWordsForSummary, 'wort').join(' ')),
+        isNull,
+      );
     });
   });
 }

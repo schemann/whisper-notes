@@ -7,6 +7,7 @@ import '../models/note.dart';
 import '../services/recorder_service.dart';
 import '../services/share_inbox.dart';
 import '../services/summary_service.dart';
+import '../services/summary_text.dart';
 import '../services/transcription_service.dart';
 
 final historyRepositoryProvider = Provider((ref) => HistoryRepository());
@@ -35,21 +36,25 @@ class JobStatus {
 class Settings {
   const Settings({
     this.language = NoteLanguage.german,
-    this.model = SpeechModel.base,
+    this.model = SpeechModel.small,
+    this.summaryModel = SummaryModel.better,
     this.summarize = true,
   });
 
   final NoteLanguage language;
   final SpeechModel model;
+  final SummaryModel summaryModel;
   final bool summarize;
 
   Settings copyWith({
     NoteLanguage? language,
     SpeechModel? model,
+    SummaryModel? summaryModel,
     bool? summarize,
   }) => Settings(
     language: language ?? this.language,
     model: model ?? this.model,
+    summaryModel: summaryModel ?? this.summaryModel,
     summarize: summarize ?? this.summarize,
   );
 }
@@ -130,14 +135,22 @@ class NotesNotifier extends AsyncNotifier<List<Note>> {
 
   Future<Note?> _summarize(Note note) async {
     final summarizer = ref.read(summaryServiceProvider);
-    _job.set(const JobStatus('Preparing summary model…'));
-    await summarizer.ensureModel(
-      onProgress: (p) => _job.set(
-        JobStatus('Downloading summary model… $p %', progress: p / 100),
-      ),
+    final model = ref.read(settingsProvider).summaryModel;
+    if (directSummary(note.transcript) == null) {
+      _job.set(const JobStatus('Preparing summary model…'));
+      await summarizer.ensureModel(
+        model,
+        onProgress: (p) => _job.set(
+          JobStatus('Downloading summary model… $p %', progress: p / 100),
+        ),
+      );
+      _job.set(const JobStatus('Summarising…'));
+    }
+    final summary = await summarizer.summarize(
+      note.transcript,
+      note.language,
+      model,
     );
-    _job.set(const JobStatus('Summarising…'));
-    final summary = await summarizer.summarize(note.transcript, note.language);
     final updated = note.copyWith(summary: summary);
     await _store(updated);
     return updated;

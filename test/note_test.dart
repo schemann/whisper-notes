@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:whisper_notes/src/data/history_repository.dart';
 import 'package:whisper_notes/src/models/note.dart';
 
-Note _note(String id, DateTime createdAt, {String transcript = 'Hallo Welt'}) => Note(
+Note _note(String id, DateTime createdAt, {String transcript = 'Hallo Welt'}) =>
+    Note(
       id: id,
       createdAt: createdAt,
       source: NoteSource.shared,
@@ -33,7 +34,10 @@ void main() {
     final repo = HistoryRepository(directory: () async => dir);
 
     expect(await repo.load(), isEmpty);
-    await repo.save([_note('old', DateTime(2026, 1, 1)), _note('new', DateTime(2026, 6, 1))]);
+    await repo.save([
+      _note('old', DateTime(2026, 1, 1)),
+      _note('new', DateTime(2026, 6, 1)),
+    ]);
     final loaded = await repo.load();
     expect(loaded.map((n) => n.id), ['new', 'old']);
   });
