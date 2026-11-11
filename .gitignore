@@ -49,3 +49,6 @@ app.*.map.json
 
 # Local iOS signing team
 ios/Signing.local.xcconfig
+
+# Kotlin compiler sessions
+**/.kotlin/
