@@ -1,0 +1,4 @@
+// The Share Extension only needs Flutter's build name/number and the signing
+// team, not the Runner's CocoaPods settings.
+#include "../Flutter/Generated.xcconfig"
+#include? "../Signing.local.xcconfig"
